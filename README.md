@@ -64,6 +64,8 @@ erDiagram
 
     TICKET {
         int id PK
+        int estudante_id FK "Relaciona com ESTUDANTE"
+        int pagamento_id FK "Relaciona com PAGAMENTO"
         string codigo_qr UK
         string status
         date data_geracao
@@ -72,6 +74,7 @@ erDiagram
 
     PAGAMENTO {
         int id PK
+        int estudante_id FK "Relaciona com ESTUDANTE"
         float valor
         string chave_pix
         string status_pagamento
@@ -80,6 +83,7 @@ erDiagram
 
     CARDAPIO {
         int id PK
+        int administrador_id FK "Relaciona com ADMINISTRADOR"
         date data_dia
         string dia_semana
         string tipo_refeicao
