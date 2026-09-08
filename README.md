@@ -1,8 +1,11 @@
 # 🍽️ Documentação do Sistema - RU UESPI
 
-Este documento centraliza a modelagem de dados e processos do aplicativo móvel para o **Restaurante Universitário da Universidade Estadual do Piauí (UESPI)**. A estrutura utiliza diagramas em formato **Mermaid** (renderizados nativamente pelo GitHub/Notion) acompanhados de tabelas descritivas para facilitar o entendimento do projeto.
+Este documento centraliza a modelagem de dados e processos do aplicativo móvel para o **Restaurante Universitário da Universidade Estadual do Piauí (UESPI)**.
 
 # ESTRUTURA DO TRABALHO DE CONCLUSÃO DE CURSO (TCC)
+
+## TEMA
+### Desenvolvimento de uma aplicação móvel para consulta de informações do cardápio do Restaurante Universitário da UESPI
 
 ## 1. INTRODUÇÃO
 * **1.1. Contextualização:** Importância dos Restaurantes Universitários (RUs) nas políticas de permanência e a fase de implantação do RU no campus da UESPI.
