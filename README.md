@@ -2,230 +2,67 @@
 
 Este documento centraliza a modelagem de dados e processos do aplicativo móvel para o **Restaurante Universitário da Universidade Estadual do Piauí (UESPI)**. A estrutura utiliza diagramas em formato **Mermaid** (renderizados nativamente pelo GitHub/Notion) acompanhados de tabelas descritivas para facilitar o entendimento do projeto.
 
----
+# ESTRUTURA DO TRABALHO DE CONCLUSÃO DE CURSO (TCC)
 
-## 🎯 1. Diagrama de Casos de Uso
-
-O diagrama abaixo ilustra as interações dos atores principais com as funcionalidades do aplicativo móvel.
-
-```mermaid
-graph LR
-    %% Atores
-    Estudante((Estudante))
-    Admin((Admin do RU))
-    SisPag((API Pix))
-
-    %% Casos de Uso Estudante
-    Estudante --> UC1(Visualizar Cardápio)
-    Estudante --> UC2(Comprar Fichas/Tickets)
-    Estudante --> UC3(Visualizar QR Code do Ticket)
-
-    %% Casos de Uso Admin
-    Admin --> UC4(Gerenciar Cardápio Semanal)
-    Admin --> UC5(Validar Ticket no Acesso)
-
-    %% Relacionamentos com o Sistema de Pagamento
-    UC2 --> SisPag
-    SisPag --> UC6(Confirmar Pagamento)
-    UC6 -.-> |<< include >>| UC2
-```
-
-### 📋 Detalhamento dos Casos de Uso
-
-| Ator | Caso de Uso | Descrição |
-| :--- | :--- | :--- |
-| **Estudante** | `UC1` Visualizar Cardápio | Consulta os pratos e refeições planejadas para a semana corrente. |
-| **Estudante** | `UC2` Comprar Fichas/Tickets | Inicia o fluxo de compra de créditos para refeição via PIX. |
-| **Estudante** | `UC3` Visualizar QR Code | Exibe a ficha digital na tela para ser escaneada na entrada do RU. |
-| **Admin do RU** | `UC4` Gerenciar Cardápio | Permite o cadastro, edição e exclusão dos menus semanais. |
-| **Admin do RU** | `UC5` Validar Ticket | Realiza a leitura e validação do QR Code do estudante na catraca/entrada. |
-| **API Pix** | `UC6` Confirmar Pagamento | Sistema externo que valida a transação financeira e notifica o app. |
+## 1. INTRODUÇÃO
+* **1.1. Contextualização:** Importância dos Restaurantes Universitários (RUs) nas políticas de permanência e a fase de implantação do RU no campus da UESPI.
+* **1.2. Problema:** Dificuldade de acesso centralizado, rápido e previsível às informações operacionais e ao cardápio diário/semanal do RU.
+* **1.3. Justificativa:** A relevância de disponibilizar um canal digital oficial para mitigar dúvidas, otimizar o tempo da comunidade acadêmica e promover inclusão digital.
+* **1.4. Objetivos:**
+  * **1.4.1. Objetivo Geral:** Desenvolver e validar uma aplicação móvel para consulta dinâmica de cardápios e centralização de informações do RU da UESPI.
+  * **1.4.2. Objetivos Específicos:** Mapeamento de requisitos, projeto UI/UX, modelagem da arquitetura/dados, implementação do protótipo em Flutter e testes de usabilidade.
 
 ---
 
-## 🗄️ 2. Dicionário de Dados & DER
-
-Abaixo está o modelo lógico do banco de dados (DER) acompanhado das tabelas que especificam cada entidade do sistema.
-
-```mermaid
-erDiagram
-    ESTUDANTE ||--o{ TICKET : "compra"
-    ESTUDANTE ||--o{ PAGAMENTO : "efetua"
-    PAGAMENTO ||--|| TICKET : "gera"
-    ADMINISTRADOR ||--o{ CARDAPIO : "cadastra"
-
-    ESTUDANTE {
-        int id PK
-        string nome
-        string matricula UK
-        string email
-        string senha
-    }
-
-    TICKET {
-        int id PK
-        int estudante_id FK "Relaciona com ESTUDANTE"
-        int pagamento_id FK "Relaciona com PAGAMENTO"
-        string codigo_qr UK
-        string status
-        date data_geracao
-        date data_uso
-    }
-
-    PAGAMENTO {
-        int id PK
-        int estudante_id FK "Relaciona com ESTUDANTE"
-        float valor
-        string chave_pix
-        string status_pagamento
-        timestamp data_hora
-    }
-
-    CARDAPIO {
-        int id PK
-        int administrador_id FK "Relaciona com ADMINISTRADOR"
-        date data_dia
-        string dia_semana
-        string tipo_refeicao
-        string descricao_pratos
-    }
-
-    ADMINISTRADOR {
-        int id PK
-        string nome
-        string email
-        string credencial
-    }
-```
-
-### 📊 Especificação das Tabelas (Dicionário de Dados)
-
-#### Entidade: `ESTUDANTE`
-| Atributo | Tipo | Restrição | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | `int` | **PK** (Primary Key) | Identificador único do estudante. |
-| `nome` | `string` | Not Null | Nome completo do usuário. |
-| `matricula` | `string` | **UK** (Unique Key) | Matrícula institucional UESPI. |
-| `email` | `string` | Not Null / UK | Email acadêmico ou pessoal para login. |
-| `senha` | `string` | Not Null | Hash da senha de acesso. |
-
-#### Entidade: `TICKET` (Ficha Digital)
-| Atributo | Tipo | Restrição | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | `int` | **PK** | Identificador único do ticket. |
-| `codigo_qr` | `string` | **UK** | Token criptografado contido no QR Code. |
-| `status` | `string` | Not Null | Estado atual (Disponível, Utilizado, Expirado). |
-| `data_geracao`| `date` | Not Null | Data em que a compra foi confirmada. |
-| `data_uso` | `date` | Nullable | Registro de quando o aluno consumiu a refeição. |
-
-#### Entidade: `PAGAMENTO`
-| Atributo | Tipo | Restrição | Descrição |
-| :--- | :--- | :--- | :--- |
-| `id` | `int` | **PK** | Identificador da transação financeira. |
-| `valor` | `float` | Not Null | Valor cobrado pela ficha do RU. |
-| `chave_pix` | `string` | Not Null | Código "Copia e Cola" ou ID do Pix gerado. |
-| `status_pagamento`| `string` | Not Null | Status do gateway (Pendente, Pago, Cancelado). |
-| `data_hora` | `timestamp`| Not Null | Data e hora exata da tentativa de compra. |
+## 2. REFERENCIAL TEÓRICO
+* **2.1. Restaurantes Universitários e Assistência Estudantil:** O papel do PNAES e da alimentação acessível na permanência discente.
+* **2.2. Tecnologias da Informação na Gestão Acadêmica:** A transformação digital de serviços universitários e a centralização de dados.
+* **2.3. Computação Ubíqua e Aplicativos Móveis:** O uso de smartphones para acesso à informação *just-in-time* no cotidiano acadêmico.
+* **2.4. Design de Interfaces e Experiência do Usuário (UX/UI):** Usabilidade, acessibilidade e as Heurísticas de Nielsen aplicadas a telas pequenas.
+* **2.5. Trabalhos e Sistemas Relacionados:** Análise comparativa de soluções existentes (ex.: aplicativo *Minha UFPI* e apps de outras IFES).
+* **2.6. Framework Flutter e Linguagem Dart:** Fundamentação técnica do ecossistema multiplataforma e consumo de APIs.
 
 ---
 
-## 🏛️ 3. Diagrama de Classes
-
-Visão estrutural orientada a objetos (POO) mapeando as classes de negócio do ecossistema do aplicativo.
-
-```mermaid
-classDiagram
-    class Usuario {
-        +int id
-        +string nome
-        +string email
-        +string senha
-        +fazerLogin()
-    }
-
-    class Estudante {
-        +string matricula
-        +visualizarCardapio()
-        +comprarTicket()
-        +exibirQRCode()
-    }
-
-    class Administrator {
-        +string credencial
-        +atualizarCardapio()
-        +validarTicket()
-    }
-
-    class Ticket {
-        +int id
-        +string qrCode
-        +string status
-        +date dataValidade
-        +atualizarStatus()
-    }
-
-    class Pagamento {
-        +int id
-        +float valor
-        +string status
-        +gerarCopiaECola()
-        +verificarStatus()
-    }
-
-    class Cardapio {
-        +int id
-        +date data
-        +string itens
-        +exibirPratos()
-    }
-
-    Usuario <|-- Estudante
-    Usuario <|-- Administrator
-    Estudante "1" --> "*" Ticket : possui
-    Estudante "1" --> "*" Pagamento : realiza
-    Pagamento "1" --> "1" Ticket : libera
-    Administrator "1" --> "*" Cardapio : gerencia
-```
-
-### ⚙️ Métodos e Responsabilidades
-
-| Classe | Operação Principal | Objetivo |
-| :--- | :--- | :--- |
-| **Estudante** | `comprarTicket()` | Dispara o fluxo de pagamento e vincula uma nova ficha à conta do usuário. |
-| **Administrator** | `validarTicket()` | Executado no celular/dispositivo do fiscal para alterar o status do ticket para "Utilizado". |
-| **Pagamento** | `gerarCopiaECola()`| Comunica-se com a API do Banco Central/Gateway para trazer o Pix dinâmico. |
-| **Ticket** | `atualizarStatus()`| Altera internamente o ciclo de vida da ficha digital. |
+## 3. MATERIAIS E MÉTODOS
+* **3.1. Natureza da Pesquisa:** Pesquisa aplicada voltada à resolução de um problema prático da comunidade acadêmica.
+* **3.2. Abordagem do Problema:** Abordagem qualitativa com foco na satisfação do usuário, usabilidade e levantamento de requisitos.
+* **3.3. Objetivos da Pesquisa:** Pesquisa exploratória baseada na metodologia de prototipação de software.
+* **3.4. Procedimentos Metodológicos:** Revisão bibliográfica, análise de similares, engenharia de requisitos e testes com usuários.
+* **3.5. Tecnologias e Ferramentas:** Descrição do ambiente de desenvolvimento (Flutter/Dart), design (Figma) e modelagem (UML/MER).
+* **3.6. Etapas do Desenvolvimento:** Ciclo de vida da aplicação (Engenharia de Requisitos $\rightarrow$ Prototipagem $\rightarrow$ Código $\rightarrow$ Validação).
 
 ---
 
-## 🔄 4. Diagrama de Transição de Estados
+## 4. DESENVOLVIMENTO DA APLICAÇÃO
+* **4.1. Levantamento de Requisitos:** Especificação detalhada dos Requisitos Funcionais (RF) e Não-Funcionais (RNF).
+* **4.2. Modelagem do Sistema:** Diagramas UML atualizados (Casos de Uso e Diagrama de Classes) e Modelo Entidade-Relacionamento (MER).
+* **4.3. Arquitetura da Solução:** Padrão arquitetural adotado no aplicativo e fluxo de integração/consumo de dados (API REST/JSON).
+* **4.4. Prototipação UI/UX:** Concepção de *wireframes* e protótipos de alta fidelidade no Figma.
+* **4.5. Implementação:** Estrutura de pastas do projeto em Flutter, gerenciamento de estado e construção dos componentes.
+* **4.6. Funcionalidades do Aplicativo:**
+  * Visualização do cardápio do dia e da semana;
+  * Detalhamento de refeições (opções vegetarianas, alérgenos e valores nutricionais);
+  * Mural de avisos e comunicados oficiais do RU;
+  * Consultas a horários e valores das refeições.
 
-Mapeamento do ciclo de vida crítico da entidade **Ticket**, vital para evitar fraudes ou duplicidade de acessos.
+---
 
-```mermaid
-stateDiagram-v2
-    [*] --> Gerado : Estudante solicita compra
-    
-    Gerado --> AguardandoPagamento : QR Code PIX apresentado
-    
-    AguardandoPagamento --> Cancelado : Tempo limite esgotado (Timeout)
-    AguardandoPagamento --> Disponivel : Pagamento Confirmado via Pix
-    
-    Disponivel --> Utilizado : QR Code lido na entrada do RU
-    Disponivel --> Expirado : Data de validade do ticket venceu
-    
-    Cancelado --> [*]
-    Utilizado --> [*]
-    Expirado --> [*]
-```
+## 5. RESULTADOS E DISCUSSÃO
+* **5.1. Apresentação das Telas:** Demonstração visual do aplicativo finalizado (Home, Cardápio, Avisos e Detalhes).
+* **5.2. Modo de Funcionamento:** Fluxo de navegação do usuário do início à consulta da informação.
+* **5.3. Módulo de Consulta do Cardápio:** Desempenho e clareza na exibição dos pratos do dia.
+* **5.4. Avaliação de Usabilidade:** Análise do aplicativo com base nos princípios de UI/UX e facilidade de navegação.
+* **5.5. Testes e Validação:** Resultados dos testes funcionais e de aceitação aplicados a uma amostra de usuários.
 
-### 🚦 Mapeamento dos Estados do Ticket
+---
 
-| Estado Atual | Gatilho (Transição) | Estado Destino | Regra de Negócio |
-| :--- | :--- | :--- | :--- |
-| `[*] Inicial` | Solicitação do aluno | **Gerado** | O ticket entra na fila temporária do sistema. |
-| `Gerado` | QR Code Pix emitido | **AguardandoPagamento**| Aguarda a notificação do webhook da API de pagamento. |
-| `AguardandoPagamento`| Tempo esgotado (ex: 10 min) | **Cancelado** | O Pix expira para não prender requisições no banco. |
-| `AguardandoPagamento`| Webhook confirma recebimento| **Disponivel** | O ticket torna-se válido e gera o QR Code definitivo de acesso. |
-| `Disponivel` | Leitura ótica na entrada | **Utilizado** | O aluno consome a refeição. O ticket é invalidado imediatamente. |
-| `Disponivel` | Validade expirada (fim do dia)| **Expirado** | Fichas diárias que não foram usadas perdem a validade (conforme regras do RU). |
+## 6. CONCLUSÃO
+* Síntese das contribuições do trabalho para o RU da UESPI;
+* Graus de cumprimento dos objetivos propostos;
+* Limitações do projeto e propostas de trabalhos futuros (ex.: futura integração com módulos financeiros/fichas quando o RU estiver em operação total).
+
+---
+
+## REFERÊNCIAS
+*(Listagem das obras citadas em formato ABNT)*
